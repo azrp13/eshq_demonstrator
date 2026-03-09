@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — EHS Inspector{% endblock %}
+{% block content %}
+
+<h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>EHS Inspection Dashboard</h2>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="display-6 text-primary">{{ total_active }}</div>
+        <div class="text-muted small fw-semibold mt-1">Active Equipment</div>
+        <i class="bi bi-tools fs-3 text-primary opacity-25"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="display-6 text-success">{{ inspections_this_month }}</div>
+        <div class="text-muted small fw-semibold mt-1">Inspections This Month</div>
+        <i class="bi bi-clipboard-check fs-3 text-success opacity-25"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center h-100 border-0 shadow-sm {% if overdue %}border-danger border{% endif %}">
+      <div class="card-body">
+        <div class="display-6 {% if overdue %}text-danger{% else %}text-secondary{% endif %}">
+          {{ overdue | length }}
+        </div>
+        <div class="text-muted small fw-semibold mt-1">Overdue Items</div>
+        <i class="bi bi-exclamation-triangle fs-3 {% if overdue %}text-danger{% else %}text-secondary{% endif %} opacity-25"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card text-center h-100 border-0 shadow-sm {% if open_walkdowns %}border-warning border{% endif %}">
+      <div class="card-body">
+        <div class="display-6 {% if open_walkdowns %}text-warning{% else %}text-secondary{% endif %}">
+          {{ open_walkdowns }}
+        </div>
+        <div class="text-muted small fw-semibold mt-1">Open Walkdown Actions</div>
+        <i class="bi bi-person-walking fs-3 {% if open_walkdowns %}text-warning{% else %}text-secondary{% endif %} opacity-25"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Overdue Equipment -->
+  <div class="col-12">
+    <div class="card {% if overdue %}border-danger{% endif %}">
+      <div class="card-header d-flex justify-content-between align-items-center
+                  {% if overdue %}bg-danger text-white{% endif %}">
+        <h5 class="mb-0">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Overdue Inspections
+        </h5>
+        {% if overdue %}
+          <span class="badge bg-white text-danger">{{ overdue | length }} item(s)</span>
+        {% else %}
+          <span class="badge bg-success">All clear</span>
+        {% endif %}
+      </div>
+      {% if overdue %}
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>EQ ID</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Location</th>
+              <th>Last Inspected</th>
+              <th>Days Overdue</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in overdue %}
+            <tr>
+              <td class="fw-bold">{{ item.eq_id }}</td>
+              <td>
+                <span class="badge badge-{{ item.category }}">{{ categories[item.category].label }}</span>
+              </td>
+              <td>{{ item.description }}</td>
+              <td><small class="text-muted">{{ item.location }}</small></td>
+              <td>
+                {% if item.last_inspected %}
+                  {{ item.last_inspected }}
+                {% else %}
+                  <span class="text-danger">Never</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-danger">{{ item.days_overdue }} days</span>
+              </td>
+              <td class="text-end">
+                <a href="{{ url_for('inspection_log', eq_id=item.id) }}" class="btn btn-sm btn-danger">
+                  <i class="bi bi-clipboard-plus me-1"></i>Inspect Now
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-success">
+        <i class="bi bi-check-circle-fill me-2"></i>No overdue inspections. All equipment is up to date.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Inspections -->
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-clipboard-data me-2"></i>Recent Inspections</h5>
+        <a href="{{ url_for('inspection_history') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+      </div>
+      {% if recent_inspections %}
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>EQ ID</th>
+              <th>Inspector</th>
+              <th>Type</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for insp in recent_inspections %}
+            <tr>
+              <td>{{ insp.inspection_date }}</td>
+              <td>
+                <a href="{{ url_for('equipment_detail', eq_id=insp.equipment_id) }}" class="fw-bold text-decoration-none">
+                  {{ insp.eq_id }}
+                </a>
+                <br><small class="text-muted">{{ insp.description }}</small>
+              </td>
+              <td>{{ insp.inspector_name }}</td>
+              <td>
+                <span class="badge bg-info text-dark">{{ inspection_types[insp.inspection_type] }}</span>
+              </td>
+              <td>
+                {% set r = results[insp.result] %}
+                <span class="badge bg-{{ r[1] }}">{{ r[0] }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card-body text-muted">
+        No inspections logged yet.
+        <a href="{{ url_for('equipment_add') }}">Add equipment</a> to get started.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Walkdowns -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-person-walking me-2"></i>Recent Walkdowns</h5>
+        <a href="{{ url_for('walkdown_list') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+      </div>
+      {% if recent_walkdowns %}
+      <div class="list-group list-group-flush">
+        {% for wd in recent_walkdowns %}
+        <a href="{{ url_for('walkdown_detail', wd_id=wd.id) }}"
+           class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-semibold">{{ wd.area_location }}</div>
+            <small class="text-muted">{{ wd.walkdown_date }} — {{ wd.inspector_name }}</small>
+          </div>
+          {% if wd.status == 'open' %}
+            <span class="badge bg-warning text-dark ms-2">Open</span>
+          {% else %}
+            <span class="badge bg-success ms-2">Closed</span>
+          {% endif %}
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card-body text-muted">
+        No walkdowns logged yet.
+        <a href="{{ url_for('walkdown_add') }}">Log one now.</a>
+      </div>
+      {% endif %}
+
+      <div class="card-footer">
+        <a href="{{ url_for('walkdown_add') }}" class="btn btn-warning text-dark btn-sm w-100">
+          <i class="bi bi-plus-circle me-1"></i>Log New Walkdown
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Equipment Registry — EHS Inspector{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0"><i class="bi bi-tools me-2"></i>Equipment Registry</h2>
+  <a href="{{ url_for('equipment_add') }}" class="btn btn-primary">
+    <i class="bi bi-plus-circle me-1"></i>Add Equipment
+  </a>
+</div>
+
+<!-- Filters -->
+<form method="get" class="card card-body mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Category</label>
+      <select name="category" class="form-select form-select-sm">
+        <option value="">All Categories</option>
+        {% for key, cat in categories.items() %}
+          <option value="{{ key }}" {% if filter_category == key %}selected{% endif %}>{{ cat.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label fw-semibold">Status</label>
+      <select name="status" class="form-select form-select-sm">
+        <option value="">All Statuses</option>
+        {% for key, (label, _) in statuses.items() %}
+          <option value="{{ key }}" {% if filter_status == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label fw-semibold">Search (ID / Description / Location)</label>
+      <input type="text" name="search" class="form-control form-control-sm"
+             value="{{ filter_search }}" placeholder="Search...">
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button type="submit" class="btn btn-sm btn-primary">
+        <i class="bi bi-search me-1"></i>Filter
+      </button>
+      <a href="{{ url_for('equipment_list') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </div>
+  </div>
+</form>
+
+{% if equipment %}
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover table-sm mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>EQ ID</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Last Inspected</th>
+          <th>Next Due</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eq in equipment %}
+        <tr class="{% if eq.days_overdue and eq.days_overdue > 0 %}table-danger{% endif %}">
+          <td class="fw-bold">{{ eq.eq_id }}</td>
+          <td>
+            <span class="badge badge-{{ eq.category }}">
+              {{ categories[eq.category].label }}
+            </span>
+          </td>
+          <td>{{ eq.description }}</td>
+          <td><small class="text-muted">{{ eq.location }}</small></td>
+          <td>
+            {% set st = statuses[eq.status] %}
+            <span class="badge bg-{{ st[1] }}">{{ st[0] }}</span>
+          </td>
+          <td>
+            {% if eq.last_inspected %}
+              {{ eq.last_inspected }}
+            {% else %}
+              <span class="text-muted">Never</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if eq.status != 'active' %}
+              <span class="text-muted">N/A</span>
+            {% elif eq.next_due %}
+              {% if eq.days_overdue and eq.days_overdue > 0 %}
+                <span class="text-danger fw-bold">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ eq.days_overdue }}d overdue
+                </span>
+              {% elif eq.days_overdue and eq.days_overdue > -8 %}
+                <span class="text-warning fw-semibold">{{ eq.next_due }} (due soon)</span>
+              {% else %}
+                {{ eq.next_due }}
+              {% endif %}
+            {% else %}
+              <span class="text-danger fw-bold">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ eq.days_overdue }}d (no periodic insp.)
+              </span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('equipment_detail', eq_id=eq.id) }}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+            {% if eq.status == 'active' %}
+            <a href="{{ url_for('inspection_log', eq_id=eq.id) }}" class="btn btn-sm btn-outline-success" title="Log Inspection">
+              <i class="bi bi-clipboard-plus"></i>
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="text-muted mt-2 small">{{ equipment | length }} item(s) shown.</p>
+{% else %}
+<div class="alert alert-info">
+  <i class="bi bi-info-circle me-2"></i>No equipment found.
+  <a href="{{ url_for('equipment_add') }}">Add your first item</a> or adjust filters.
+</div>
+{% endif %}
+
+{% endblock %}

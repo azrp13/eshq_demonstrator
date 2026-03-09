@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Log Inspection — {{ eq.eq_id }} — EHS Inspector{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('equipment_list') }}">Equipment</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('equipment_detail', eq_id=eq.id) }}">{{ eq.eq_id }}</a></li>
+        <li class="breadcrumb-item active">Log Inspection</li>
+      </ol>
+    </nav>
+
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+          <i class="bi bi-clipboard-plus me-2"></i>Log Inspection
+          <small class="ms-2 opacity-75">{{ eq.eq_id }} — {{ eq.description }}</small>
+        </h5>
+      </div>
+
+      <div class="card-body">
+        <!-- Equipment context -->
+        <div class="alert alert-secondary py-2 mb-3">
+          <div class="row">
+            <div class="col-sm-4"><strong>Category:</strong> {{ categories[eq.category].label }}</div>
+            <div class="col-sm-4"><strong>Location:</strong> {{ eq.location }}</div>
+            <div class="col-sm-4"><strong>Inspection Freq:</strong>
+              {{ 'Monthly' if categories[eq.category].freq_days == 30 else 'Quarterly' }}
+            </div>
+          </div>
+        </div>
+
+        <form method="post">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Inspector Name <span class="text-danger">*</span></label>
+              <input type="text" name="inspector_name" class="form-control" required
+                     placeholder="Full name">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Inspection Date <span class="text-danger">*</span></label>
+              <input type="date" name="inspection_date" class="form-control" required value="{{ today }}" max="{{ today }}">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Inspection Type <span class="text-danger">*</span></label>
+              <select name="inspection_type" class="form-select" required>
+                {% for t in allowed_types %}
+                  <option value="{{ t }}">{{ inspection_types[t] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Result <span class="text-danger">*</span></label>
+              <div class="d-flex gap-3 mt-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="result" value="pass" id="r-pass" required>
+                  <label class="form-check-label text-success fw-semibold" for="r-pass">
+                    <i class="bi bi-check-circle-fill"></i> Pass
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="result" value="needs_repair" id="r-repair">
+                  <label class="form-check-label text-warning fw-semibold" for="r-repair">
+                    <i class="bi bi-wrench"></i> Needs Repair
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="result" value="fail" id="r-fail">
+                  <label class="form-check-label text-danger fw-semibold" for="r-fail">
+                    <i class="bi bi-x-circle-fill"></i> Fail
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Findings / Observations</label>
+              <textarea name="findings" class="form-control" rows="3"
+                        placeholder="Describe what was observed, any deficiencies found..."></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Corrective Action</label>
+              <textarea name="corrective_action" class="form-control" rows="2"
+                        placeholder="Action taken or required to correct any issues..."></textarea>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-circle me-1"></i>Save Inspection
+            </button>
+            <a href="{{ url_for('equipment_detail', eq_id=eq.id) }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

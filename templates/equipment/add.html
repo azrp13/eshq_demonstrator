@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Add Equipment — EHS Inspector{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('equipment_list') }}">Equipment</a></li>
+        <li class="breadcrumb-item active">Add Equipment</li>
+      </ol>
+    </nav>
+
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add New Equipment</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Equipment ID <span class="text-danger">*</span></label>
+            <input type="text" name="eq_id" class="form-control" required
+                   placeholder="e.g. LDR-001, FE-042, HR-005">
+            <div class="form-text">Unique tag/identifier for this piece of equipment.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+            <select name="category" class="form-select" required>
+              <option value="">-- Select Category --</option>
+              {% for key, cat in categories.items() %}
+                <option value="{{ key }}">{{ cat.label }}
+                  ({{ 'Monthly' if cat.freq_days == 30 else 'Quarterly' }} inspections)
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+            <input type="text" name="description" class="form-control" required
+                   placeholder="e.g. 6ft Fiberglass A-Frame, Werner Model FS206">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Location <span class="text-danger">*</span></label>
+            <input type="text" name="location" class="form-control" required
+                   placeholder="e.g. Building 3, Bay 2">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notes</label>
+            <textarea name="notes" class="form-control" rows="2"
+                      placeholder="Optional: serial number, purchase date, special notes..."></textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle me-1"></i>Add Equipment
+            </button>
+            <a href="{{ url_for('equipment_list') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ eq.eq_id }} — EHS Inspector{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('equipment_list') }}">Equipment</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('equipment_detail', eq_id=eq.id) }}">{{ eq.eq_id }}</a></li>
+        <li class="breadcrumb-item active">Edit</li>
+      </ol>
+    </nav>
+
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Edit Equipment — {{ eq.eq_id }}</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary">
+          <strong>EQ ID:</strong> {{ eq.eq_id }} &nbsp;|&nbsp;
+          <strong>Category:</strong> {{ categories[eq.category].label }}
+          <br><small class="text-muted">Equipment ID and category cannot be changed after creation.</small>
+        </div>
+
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+            <input type="text" name="description" class="form-control" required
+                   value="{{ eq.description }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Location <span class="text-danger">*</span></label>
+            <input type="text" name="location" class="form-control" required
+                   value="{{ eq.location }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notes</label>
+            <textarea name="notes" class="form-control" rows="3">{{ eq.notes or '' }}</textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle me-1"></i>Save Changes
+            </button>
+            <a href="{{ url_for('equipment_detail', eq_id=eq.id) }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
